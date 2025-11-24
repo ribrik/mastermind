@@ -6,7 +6,7 @@
         codeLength: 4,
         maxTurns: 8,
         colors: ["red", "yellow", "green", "blue", "pink", "black", "white"],
-        rowNames: ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine"],
+        rowNames: ["one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve", "thirteen", "fourteen", "fifteen"],
         selectors: {
             paletteColors: ".bottom span:not(.delete):not(.submit)",
             deleteBtn: ".delete",
