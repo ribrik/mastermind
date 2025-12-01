@@ -256,29 +256,45 @@ body {
     padding: 16px;
 }
 
-/* Reset button (matches your board style) */
-.resetBtn {
-  display: flex;
-  justify-content: center;
-  margin: 0 0 50px; /* sits nicely above Rules */
+.controls{
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  gap:12px;
+  margin: 0 0 50px;
+  font-family: "Roboto Mono", monospace;
+  color: white;
 }
 
-#resetBtn {
+.controls label{
+  text-transform: lowercase;
+}
+
+#modeSelect{
+  font-family: "Roboto Mono", monospace;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 2px solid #9E9E9E;
+  background: #424242;
+  color: white;
+  outline: none;
+}
+
+#resetBtn, #chooseCodeBtn{
   font-family: "Roboto Mono", monospace;
   background: linear-gradient(to right, #9E9E9E 1%, #CECECE 3%, #CECECE 97%, #9E9E9E 99%);
   border: 2px solid #9E9E9E;
   border-bottom: 5px solid #9E9E9E;
   color: #111;
-  padding: 10px 18px;
+  padding: 10px 14px;
   border-radius: 10px;
   cursor: pointer;
   user-select: none;
 }
 
-#resetBtn:hover {
-  filter: brightness(1.05);
+#resetBtn:active, #chooseCodeBtn:active{ transform: scale(0.98); }
+#chooseCodeBtn:disabled{
+  opacity: 0.6;
+  cursor: not-allowed;
 }
 
-#resetBtn:active {
-  transform: scale(0.98);
-}

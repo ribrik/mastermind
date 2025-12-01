@@ -1,4 +1,4 @@
-/* script.js - Clean Code Mastermind (jQuery) */
+/* script.js - Mastermind (jQuery) - MERGED */
 (() => {
   "use strict";
 
@@ -12,8 +12,10 @@
       deleteBtn: ".delete",
       submitBtn: ".submit",
 
-      //  RESET: selector for your reset button
+      //   Must match HTML ids
       resetBtn: "#resetBtn",
+      chooseCodeBtn: "#chooseCodeBtn",
+      modeSelect: "#modeSelect",
 
       topSlots: [".color-one", ".color-two", ".color-three", ".color-four"],
       dotsBox: (rowIndex) => `.dots${rowIndex + 1}`,
@@ -25,6 +27,11 @@
   class MastermindGame {
     constructor(config) {
       this.config = config;
+
+      // mode feature
+      this.mode = "computer";   // "computer" | "human"
+      this.codeChosen = true;   // human mode: must set code first
+
       this.secret = createSecret(config);
       this.currentRowIndex = 0;
       this.currentPosIndex = 0;
@@ -33,42 +40,102 @@
 
     init() {
       this.bindEvents();
+      this.syncModeFromUI();
     }
 
     bindEvents() {
-      $(this.config.selectors.paletteColors).on(
-        "click",
-        this.handlePaletteClick.bind(this)
-      );
-      $(this.config.selectors.deleteBtn).on(
-        "click",
-        this.handleDeleteClick.bind(this)
-      );
-      $(this.config.selectors.submitBtn).on(
-        "click",
-        this.handleSubmitClick.bind(this)
-      );
+      $(this.config.selectors.paletteColors).on("click", this.handlePaletteClick.bind(this));
+      $(this.config.selectors.deleteBtn).on("click", this.handleDeleteClick.bind(this));
+      $(this.config.selectors.submitBtn).on("click", this.handleSubmitClick.bind(this));
 
-      //  RESET: hook up reset button
-      $(this.config.selectors.resetBtn).on(
-        "click",
-        this.handleResetClick.bind(this)
+      $(this.config.selectors.resetBtn).on("click", this.handleResetClick.bind(this));
+      $(this.config.selectors.chooseCodeBtn).on("click", this.handleChooseCodeClick.bind(this));
+      $(this.config.selectors.modeSelect).on("change", this.handleModeChange.bind(this));
+    }
+
+    // ---------- Mode ----------
+    syncModeFromUI() {
+      this.mode = ($(this.config.selectors.modeSelect).val() || "computer");
+      this.applyMode();
+    }
+
+    handleModeChange() {
+      this.mode = ($(this.config.selectors.modeSelect).val() || "computer");
+      this.applyMode();
+    }
+
+    applyMode() {
+      const $choose = $(this.config.selectors.chooseCodeBtn);
+
+      if (this.mode === "computer") {
+        this.codeChosen = true;
+        $choose.prop("disabled", true);
+        this.reset(true); // new random secret
+      } else {
+        // human mode: user must click "set code"
+        this.codeChosen = false;
+        $choose.prop("disabled", false);
+        this.reset(false); // clear board but keep current secret (will be replaced when user sets)
+      }
+    }
+
+    // ---------- Click handlers ----------
+    handleResetClick() {
+      if (this.mode === "computer") {
+        this.codeChosen = true;
+        this.reset(true);
+      } else {
+        this.codeChosen = false;
+        this.reset(false); // clear board; user needs to set code again
+      }
+    }
+
+    handleChooseCodeClick() {
+      if (this.mode !== "human") return;
+
+      const allowed = this.config.colors;
+      const input = prompt(
+        `Set the secret code:\n` +
+        `Type ${this.config.codeLength} colors separated by spaces.\n` +
+        `Allowed: ${allowed.join(", ")}\n` +
+        `Example: red blue pink white`
       );
+      if (input == null) return;
+
+      const picked = input.toLowerCase().split(/[\s,]+/).filter(Boolean);
+
+      if (picked.length !== this.config.codeLength) {
+        alert(`You must enter exactly ${this.config.codeLength} colors.`);
+        return;
+      }
+      if (!picked.every((c) => allowed.includes(c))) {
+        alert("One or more colors were not allowed (check spelling).");
+        return;
+      }
+
+      this.secret = picked;
+      this.codeChosen = true;
+      this.reset(false); // reset board but keep chosen secret
     }
 
     handlePaletteClick(event) {
+      if (this.mode === "human" && !this.codeChosen) {
+        alert('Human mode: click "set code" first.');
+        return;
+      }
       if (this.isGameOver() || this.isRowFull()) return;
 
-      const chosenColor = getPaletteColor(
-        event.currentTarget,
-        this.config.colors
-      );
+      const chosenColor = getPaletteColor(event.currentTarget, this.config.colors);
       if (!chosenColor) return;
 
       this.placeColor(chosenColor);
     }
 
     handleDeleteClick() {
+      if (this.mode === "human" && !this.codeChosen) {
+        alert('Human mode: click "set code" first.');
+        return;
+      }
       if (this.isGameOver() || this.currentPosIndex === 0) return;
 
       this.currentPosIndex--;
@@ -79,6 +146,10 @@
     }
 
     handleSubmitClick() {
+      if (this.mode === "human" && !this.codeChosen) {
+        alert('Human mode: click "set code" first.');
+        return;
+      }
       if (this.isGameOver()) return;
 
       if (!this.isRowComplete()) {
@@ -97,38 +168,32 @@
       this.advanceRowOrLose();
     }
 
-    //  RESET: click handler
-    handleResetClick() {
-      this.reset();
-    }
+    // ---------- Reset / Game ops ----------
+    reset(makeNewSecret = true) {
+      if (makeNewSecret) {
+        this.secret = createSecret(this.config);
+      }
 
-    //  RESET: full reset logic (new code + clear UI)
-    reset() {
-      // reset state
-      this.secret = createSecret(this.config);
       this.currentRowIndex = 0;
       this.currentPosIndex = 0;
       this.currentGuess = [];
 
-      // clear all guess slots + cancel wiggle offsets
       this.config.rowNames.forEach((rowName) => {
         const $rowSlots = $(this.config.selectors.rowSlots(rowName));
         $rowSlots.removeClass(this.config.colors.join(" "));
         $rowSlots.stop(true).css("left", "");
       });
 
-      // clear all feedback dots
       for (let i = 0; i < this.config.maxTurns; i++) {
         $(this.config.selectors.dotsBox(i))
           .children("div")
           .css({ backgroundColor: "" });
       }
 
-      // hide/clear revealed secret at the top
       this.config.selectors.topSlots.forEach((selector) => {
         const $slot = $(selector);
         $slot.removeClass(this.config.colors.join(" "));
-        $slot.css("display", ""); // revert to CSS default (hidden)
+        $slot.css("display", "");
       });
     }
 
@@ -161,18 +226,14 @@
 
       pegs.forEach((pegColor, i) => {
         $dots.eq(i).css({
-          backgroundColor: pegColor === "black" ? "#111" : "#eee",
+          backgroundColor: pegColor === "black" ? "#111" : "#ff0000ff",
         });
       });
     }
 
     finishGame(won) {
       this.revealSecret();
-      alert(
-        won
-          ? "🎉 You cracked the code!"
-          : "💀 Out of turns! The code is revealed."
-      );
+      alert(won ? "🎉 You cracked the code!" : "💀 Out of turns! The code is revealed.");
       this.currentRowIndex = this.config.maxTurns; // lock input
     }
 
@@ -181,7 +242,7 @@
         const $slot = $(selector);
         $slot.removeClass(this.config.colors.join(" "));
         $slot.addClass(this.secret[i]);
-        $slot.css("display", "block"); // CSS hides these by default
+        $slot.css("display", "block");
       });
     }
 
