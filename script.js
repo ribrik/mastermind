@@ -1,4 +1,4 @@
-/* script.js - Clean Code Mastermind (jQuery) */
+/* script.js - Mastermind (jQuery) - MERGED */
 (() => {
   "use strict";
 
@@ -22,6 +22,11 @@
   class MastermindGame {
     constructor(config) {
       this.config = config;
+
+      // mode feature
+      this.mode = "computer";   // "computer" | "human"
+      this.codeChosen = true;   // human mode: must set code first
+
       this.secret = createSecret(config);
       this.currentRowIndex = 0;
       this.currentPosIndex = 0;
@@ -30,6 +35,7 @@
 
     init() {
       this.bindEvents();
+      this.syncModeFromUI();
     }
 
     bindEvents() {
@@ -49,21 +55,42 @@
         "click",
         this.handleResetClick.bind(this)
       );
+      if (input == null) return;
+
+      const picked = input.toLowerCase().split(/[\s,]+/).filter(Boolean);
+
+      if (picked.length !== this.config.codeLength) {
+        alert(`You must enter exactly ${this.config.codeLength} colors.`);
+        return;
+      }
+      if (!picked.every((c) => allowed.includes(c))) {
+        alert("One or more colors were not allowed (check spelling).");
+        return;
+      }
+
+      this.secret = picked;
+      this.codeChosen = true;
+      this.reset(false); // reset board but keep chosen secret
     }
 
     handlePaletteClick(event) {
+      if (this.mode === "human" && !this.codeChosen) {
+        alert('Human mode: click "set code" first.');
+        return;
+      }
       if (this.isGameOver() || this.isRowFull()) return;
 
-      const chosenColor = getPaletteColor(
-        event.currentTarget,
-        this.config.colors
-      );
+      const chosenColor = getPaletteColor(event.currentTarget, this.config.colors);
       if (!chosenColor) return;
 
       this.placeColor(chosenColor);
     }
 
     handleDeleteClick() {
+      if (this.mode === "human" && !this.codeChosen) {
+        alert('Human mode: click "set code" first.');
+        return;
+      }
       if (this.isGameOver() || this.currentPosIndex === 0) return;
 
       this.currentPosIndex--;
@@ -74,6 +101,10 @@
     }
 
     handleSubmitClick() {
+      if (this.mode === "human" && !this.codeChosen) {
+        alert('Human mode: click "set code" first.');
+        return;
+      }
       if (this.isGameOver()) return;
 
       if (!this.isRowComplete()) {
