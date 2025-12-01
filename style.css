@@ -256,11 +256,6 @@ body {
     padding: 16px;
 }
 
-
-.resetBtn {
-    text-align: center;
-    font-family: "Roboto Mono", monospace;
-}
 /* Reset button (matches your board style) */
 .resetBtn {
   display: flex;
