@@ -30,7 +30,7 @@ body {
 
 .top,
 .bottom {
-    width: 350px;
+    width: 400px;
     height: 75px;
     border-radius: 10px;
 }
@@ -68,7 +68,7 @@ body {
 
 .middle {
     width: 300px;
-    height: 375px;
+    height: 500px;
 }
 
 .grid {
@@ -76,7 +76,7 @@ body {
     height: 100%;
     display: grid;
     grid-template-columns: repeat(5, 1fr);
-    grid-template-rows: repeat(8, 1fr);
+    grid-template-rows: repeat(10, 1fr);
 }
 
 .grid>* {
@@ -93,7 +93,9 @@ body {
 .dots5,
 .dots6,
 .dots7,
-.dots8 {
+.dots8,
+.dots9,
+.dots10 {
     display: grid;
     grid-template-columns: 1fr 1fr;
     grid-template-rows: 1fr 1fr;
@@ -107,7 +109,9 @@ body {
 .dots5>div,
 .dots6>div,
 .dots7>div,
-.dots8>div {
+.dots8>div,
+.dots9>div,
+.dots10>div {
     width: 10px;
     box-shadow: inset 0 0.5px 0.5px 0.5px #424242;
     height: 10px;
@@ -133,10 +137,6 @@ body {
     align-items: center;
 }
 
-.red {
-    background-color: red;
-}
-
 .bottom>span {
     width: 27px;
     height: 27px;
@@ -154,6 +154,11 @@ body {
 }
 
 /* button colors */
+
+.red {
+    background-color: red;
+}
+
 .yellow {
     background-color: yellow;
 }
@@ -166,8 +171,16 @@ body {
     background-color: blue;
 }
 
+.pink {
+    background-color: hotpink;
+}
+
 .black {
     background-color: black;
+}
+
+.white {
+    background-color: white;
 }
 
 .delete {
@@ -175,6 +188,7 @@ body {
     place-items: center;
     color: black;
     font-weight: bolder;
+    user-select: none;
 }
 
 .submit {
@@ -183,6 +197,7 @@ body {
     font-size: 14px;
     color: white;
     background-color: green;
+    user-select: none;
 }
 
 .rules {
@@ -221,22 +236,24 @@ body {
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
+    box-sizing: border-box;
 }
 
 /* Ta bort onödig marginal och göm horisontellt spill */
-html, body {
-  margin: 0;
-  padding: 0;
-  max-width: 100%;
-  overflow-x: hidden;   /* viktig för att inget ska sticka ut i sidled */
+html,
+body {
+    margin: 0;
+    padding: 0;
+    max-width: 100%;
+    overflow-x: hidden;
+    /* viktig för att inget ska sticka ut i sidled */
 }
 
 .container {
-  width: 100%;          
-  max-width: 1200px;  
-  margin: 0 auto;
-  padding: 16px;
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 16px;
 }
 
 
