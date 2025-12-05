@@ -1,4 +1,4 @@
-/* script.js - Mastermind (jQuery) - MERGED */
+/* script.js - Mastermind (jQuery) */
 (() => {
   "use strict";
 
@@ -12,7 +12,7 @@
       deleteBtn: ".delete",
       submitBtn: ".submit",
 
-      // ✅ Must match HTML ids
+      // matchar din HTML
       resetBtn: "#resetBtn",
       chooseCodeBtn: "#chooseCodeBtn",
       modeSelect: "#modeSelect",
@@ -28,9 +28,11 @@
     constructor(config) {
       this.config = config;
 
-      // ✅ mode feature
       this.mode = "computer";   // "computer" | "human"
-      this.codeChosen = true;   // human mode: must set code first
+      this.codeChosen = true;   // human: måste sätta kod först
+      this.settingSecret = false;
+      this.secretDraft = [];
+      this.secretPos = 0;
 
       this.secret = createSecret(config);
       this.currentRowIndex = 0;
@@ -53,7 +55,7 @@
       $(this.config.selectors.modeSelect).on("change", this.handleModeChange.bind(this));
     }
 
-    // ---------- Mode ----------
+    // ----- Mode -----
     syncModeFromUI() {
       this.mode = ($(this.config.selectors.modeSelect).val() || "computer");
       this.applyMode();
@@ -69,71 +71,128 @@
 
       if (this.mode === "computer") {
         this.codeChosen = true;
+        this.settingSecret = false;
         $choose.prop("disabled", true);
-        this.reset(true); // new random secret
+        this.reset(true, true);
       } else {
-        // human mode: user must click "set code"
+        // human
         this.codeChosen = false;
+        this.settingSecret = false;
         $choose.prop("disabled", false);
-        this.reset(false); // clear board but keep current secret (will be replaced when user sets)
+        this.reset(false, true);
       }
     }
 
-    // ---------- Click handlers ----------
+    // ----- Secret setup UI -----
+    enterSecretSetup() {
+      this.settingSecret = true;
+      this.codeChosen = false;
+      this.secretDraft = [];
+      this.secretPos = 0;
+      
+      this.reset(false, false);
+      this.showTopSlotsEmpty();
+    }
+
+    showTopSlotsEmpty() {
+      this.config.selectors.topSlots.forEach((selector) => {
+        const $slot = $(selector);
+        $slot.removeClass(this.config.colors.join(" "));
+        $slot.css("display", "block"); // visar alla 4 under setup
+      });
+    }
+
+    hideTopSlots() {
+      this.config.selectors.topSlots.forEach((selector) => {
+        const $slot = $(selector);
+        $slot.css("display", ""); // tillbaka till CSS default (hidden)
+      });
+    }
+
+    putSecretColor(color) {
+      if (this.secretPos >= this.config.codeLength) return;
+
+      const selector = this.config.selectors.topSlots[this.secretPos];
+      const $slot = $(selector);
+      $slot.removeClass(this.config.colors.join(" "));
+      $slot.addClass(color);
+      $slot.css("display", "block");
+
+      this.secretDraft.push(color);
+      this.secretPos++;
+    }
+
+    deleteSecretColor() {
+      if (this.secretPos <= 0) return;
+
+      this.secretPos--;
+      this.secretDraft.pop();
+
+      const selector = this.config.selectors.topSlots[this.secretPos];
+      const $slot = $(selector);
+      $slot.removeClass(this.config.colors.join(" "));
+    }
+
+    confirmSecret() {
+      if (this.secretDraft.length !== this.config.codeLength) {
+        alert(`Du måste välja exakt ${this.config.codeLength} färger.`);
+        return;
+      }
+      this.secret = [...this.secretDraft];
+      this.settingSecret = false;
+      this.codeChosen = true;
+
+      // göm koden igen och nollställ brädet (utan att skapa ny hemlig kod)
+      this.hideTopSlots();
+      this.reset(false, true);
+    }
+
+    // ----- Click handlers -----
+    handleChooseCodeClick() {
+      if (this.mode !== "human") return;
+      this.enterSecretSetup();
+    }
+
     handleResetClick() {
       if (this.mode === "computer") {
         this.codeChosen = true;
-        this.reset(true);
+        this.settingSecret = false;
+        this.reset(true, true);
       } else {
+        // human: kräver ny kod igen
         this.codeChosen = false;
-        this.reset(false); // clear board; user needs to set code again
+        this.settingSecret = false;
+        this.reset(false, true);
       }
-    }
-
-    handleChooseCodeClick() {
-      if (this.mode !== "human") return;
-
-      const allowed = this.config.colors;
-      const input = prompt(
-        `Set the secret code:\n` +
-        `Type ${this.config.codeLength} colors separated by spaces.\n` +
-        `Allowed: ${allowed.join(", ")}\n` +
-        `Example: red blue pink white`
-      );
-      if (input == null) return;
-
-      const picked = input.toLowerCase().split(/[\s,]+/).filter(Boolean);
-
-      if (picked.length !== this.config.codeLength) {
-        alert(`You must enter exactly ${this.config.codeLength} colors.`);
-        return;
-      }
-      if (!picked.every((c) => allowed.includes(c))) {
-        alert("One or more colors were not allowed (check spelling).");
-        return;
-      }
-
-      this.secret = picked;
-      this.codeChosen = true;
-      this.reset(false); // reset board but keep chosen secret
     }
 
     handlePaletteClick(event) {
+      const chosenColor = getPaletteColor(event.currentTarget, this.config.colors);
+      if (!chosenColor) return;
+
+      // om vi håller på att välja hemlig kod: fyll toppraden
+      if (this.settingSecret) {
+        this.putSecretColor(chosenColor);
+        return;
+      }
+
       if (this.mode === "human" && !this.codeChosen) {
-        alert('Human mode: click "set code" first.');
+        alert('Human mode: klicka "set code" först.');
         return;
       }
       if (this.isGameOver() || this.isRowFull()) return;
-
-      const chosenColor = getPaletteColor(event.currentTarget, this.config.colors);
-      if (!chosenColor) return;
 
       this.placeColor(chosenColor);
     }
 
     handleDeleteClick() {
+      if (this.settingSecret) {
+        this.deleteSecretColor();
+        return;
+      }
+
       if (this.mode === "human" && !this.codeChosen) {
-        alert('Human mode: click "set code" first.');
+        alert('Human mode: klicka "set code" först.');
         return;
       }
       if (this.isGameOver() || this.currentPosIndex === 0) return;
@@ -146,10 +205,16 @@
     }
 
     handleSubmitClick() {
-      if (this.mode === "human" && !this.codeChosen) {
-        alert('Human mode: click "set code" first.');
+      if (this.settingSecret) {
+        this.confirmSecret();
         return;
       }
+
+      if (this.mode === "human" && !this.codeChosen) {
+        alert('Human mode: klicka "set code" först.');
+        return;
+      }
+
       if (this.isGameOver()) return;
 
       if (!this.isRowComplete()) {
@@ -168,8 +233,8 @@
       this.advanceRowOrLose();
     }
 
-    // ---------- Reset / Game ops ----------
-    reset(makeNewSecret = true) {
+    // ----- Reset / Game ops -----
+    reset(makeNewSecret = false, hideTop = true) {
       if (makeNewSecret) {
         this.secret = createSecret(this.config);
       }
@@ -190,10 +255,11 @@
           .css({ backgroundColor: "" });
       }
 
+      // rensa toppens färgklasser, och göm om vi vill
       this.config.selectors.topSlots.forEach((selector) => {
         const $slot = $(selector);
         $slot.removeClass(this.config.colors.join(" "));
-        $slot.css("display", "");
+        if (hideTop) $slot.css("display", "");
       });
     }
 
