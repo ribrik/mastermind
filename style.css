@@ -7,16 +7,6 @@ body {
     background-color: #000;
 }
 
-.links {
-    margin-left: 50px;
-    margin-top: 20px;
-}
-
-a {
-    color: white;
-    font-weight: bold;
-}
-
 .game {
     height: 100%;
     background-color: #000;
@@ -361,4 +351,18 @@ body {
 
 #notif-button:hover {
     background: #45a049;
+}
+
+/* Game and Rules Btn */
+
+.game_rulesBtn {
+    font-family: "Roboto Mono", monospace;
+    background: linear-gradient(to right, #9E9E9E 1%, #CECECE 3%, #CECECE 97%, #9E9E9E 99%);
+    border: 2px solid #9E9E9E;
+    border-bottom: 5px solid #9E9E9E;
+    color: #111;
+    padding: 10px 14px;
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
 }

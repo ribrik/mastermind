@@ -15,10 +15,6 @@
 </head>
 
 <header>
-    <div class="links">
-        <a href="https://samiboi1.github.io/mastermind/">Game</a>
-        <a href="https://samiboi1.github.io/mastermind/rules.html">Rules</a>
-    </div>
 </header>
 
 <div id="game-notification" class="notification hidden">
@@ -37,14 +33,15 @@
         <div class="controls">
             <label for="modeSelect">mode</label>
             <select id="modeSelect">
-                <option value="computer" selected>computer sets code</option>
-                <option value="human">human sets code</option>
+                <option value="computer" selected>Computer sets code</option>
+                <option value="human">Human sets code</option>
 
             </select>
-            <button id="chooseCodeBtn" type="button">set code</button>
+            <button id="chooseCodeBtn" type="button">Set code</button>
         </div>
         <div>
-            <button id="resetBtn" type="button">reset</button>
+            <button id="resetBtn" type="button">Reset</button>
+            <button class="game_rulesBtn" onclick="goToRules()">Rules</button>
         </div>
         <div class='top'>
             <div class='code'>

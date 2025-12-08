@@ -28,8 +28,8 @@
     constructor(config) {
       this.config = config;
 
-      this.mode = "computer";   
-      this.codeChosen = true;  
+      this.mode = "computer";
+      this.codeChosen = true;
       this.settingSecret = false;
       this.secretDraft = [];
       this.secretPos = 0;
@@ -88,7 +88,7 @@
       this.codeChosen = false;
       this.secretDraft = [];
       this.secretPos = 0;
-      
+
       this.reset(false, false);
       this.showTopSlotsEmpty();
     }
@@ -416,18 +416,26 @@
 })();
 
 function showNotification(title, message, callback = null) {
-    const box = document.getElementById("game-notification");
-    const notifTitle = document.getElementById("notif-title");
-    const notifMessage = document.getElementById("notif-message");
-    const button = document.getElementById("notif-button");
+  const box = document.getElementById("game-notification");
+  const notifTitle = document.getElementById("notif-title");
+  const notifMessage = document.getElementById("notif-message");
+  const button = document.getElementById("notif-button");
 
-    notifTitle.textContent = title;
-    notifMessage.textContent = message;
+  notifTitle.textContent = title;
+  notifMessage.textContent = message;
 
-    box.classList.remove("hidden");
+  box.classList.remove("hidden");
 
-    button.onclick = () => {
-        box.classList.add("hidden");
-        if (callback) callback();
-    };
+  button.onclick = () => {
+    box.classList.add("hidden");
+    if (callback) callback();
+  };
+}
+
+function goToGame() {
+  window.location.href = "https://samiboi1.github.io/mastermind/";
+}
+
+function goToRules() {
+  window.location.href = "https://samiboi1.github.io/mastermind/rules.html";
 }
